@@ -63,9 +63,11 @@ def set_output_folder():
     if(check_out_folder.get() == 1):
         output_folder.set(get_source(video_path.get()))
         output_entry.xview("end")
-        output_entry.configure(state='disabled')
+        output_entry.configure(text_color='light grey',
+                               fg_color='grey', state='disabled')
     else:
-        output_entry.configure(state='normal')
+        output_entry.configure(
+            text_color="#DCE4EE", fg_color="#343638", state='normal')
 
 
 def get_source(filepath):
@@ -124,36 +126,39 @@ mainframe = ctk.CTkFrame(master=gui,
                          height=132,
                          corner_radius=50)
 mainframe.grid(column=0, row=0, sticky=('N, W, E, S'))
-gui.columnconfigure(0, weight=1)
-gui.rowconfigure(0, weight=1)
+gui.columnconfigure((0, 1), weight=1)
+gui.columnconfigure((2, 3, 4), weight=0)
+gui.rowconfigure((0, 1, 2, 3, 4), weight=1)
 
 # display video path
 video_path = tk.StringVar()
+video_path.set('C:/Users/adamm/Downloads/sample-mp4-file.mp4')  # debug only
 video_path_entry = ctk.CTkEntry(
     mainframe, width=500, textvariable=video_path)
-video_path_entry.grid(column=2, row=1, sticky=('we'), columnspan=2)
+video_path_entry.grid(column=2, row=1, sticky='we',
+                      columnspan=2, pady=(0, 4))
 
 
 # button to open file dialog to select file
 file_select = ctk.CTkButton(mainframe, text='Choose file', command=select_file)
-file_select.grid(column=4, row=1, sticky='we')
+file_select.grid(column=4, row=1, padx=4, pady=(0, 4))
 
 # output folder path
 output_folder = tk.StringVar()
-output_entry = ctk.CTkEntry(mainframe, width=50, textvariable=output_folder)
-output_entry.grid(column=2, row=2, sticky='we', columnspan=2)
+output_entry = ctk.CTkEntry(mainframe, width=100, textvariable=output_folder)
+output_entry.grid(column=2, row=2, sticky='we', columnspan=2, pady=(0, 4))
 
 
 # button to open file dialog to select output location
 output_select = ctk.CTkButton(
     mainframe, text='Choose folder', command=select_folder)
-output_select.grid(column=4, row=2, sticky='we')
+output_select.grid(column=4, row=2, pady=(0, 4))
 
 # start time
 start_time = tk.StringVar()
 start_time.set("00:00:00.00")
-start_entry = ctk.CTkEntry(mainframe, width=80, textvariable=start_time)
-start_entry.grid(column=2, row=3, sticky='w')
+start_entry = ctk.CTkEntry(mainframe, width=85, textvariable=start_time)
+start_entry.grid(column=2, row=3, sticky='w', pady=(0, 4))
 # start_time = tk.StringVar()
 # start_entry2 = ctk.Spinbox(
 #     mainframe, from_=0, to=100, width=10, textvariable=start_time, increment=1,
@@ -163,40 +168,46 @@ start_entry.grid(column=2, row=3, sticky='w')
 # end time
 end_time = tk.StringVar()
 end_time.set("00:00:00.00")
-end_entry = ctk.CTkEntry(mainframe, width=80, textvariable=end_time)
-end_entry.grid(column=2, row=4, sticky='w')
+end_entry = ctk.CTkEntry(mainframe, width=85, textvariable=end_time)
+end_entry.grid(column=2, row=4, sticky='w', pady=(0, 4))
 
 # check box for placing video in original folder
 check_out_folder = tk.IntVar()
 check_folder = ctk.CTkCheckBox(mainframe, variable=check_out_folder,
                                command=set_output_folder,
                                text='Output file to input folder')
-check_folder.grid(column=3, row=3, sticky='w', columnspan=2)
+check_folder.grid(column=2, row=3, sticky='w',
+                  columnspan=2, padx=(90, 0), pady=(0, 4))
 
 # check box for deleting original file after trim
 delete_file = tk.BooleanVar()
 check_delete = ctk.CTkCheckBox(mainframe, variable=delete_file,
                                offvalue=False, onvalue=True,
                                text='Delete original file after trimming')
-check_delete.grid(column=3, row=4, sticky='w', columnspan=2)
+check_delete.grid(column=2, row=4, sticky='w',
+                  columnspan=2, padx=(90, 0), pady=(0, 4))
 
 # Entry for new filename
 filename = tk.StringVar()
-new_filename = ctk.CTkEntry(mainframe, width=50, textvariable=filename)
-new_filename.grid(column=2, row=5)
+new_filename = ctk.CTkEntry(mainframe, width=100, textvariable=filename)
+new_filename.grid(column=2, row=5, sticky='we')
 
 # trim video button
 trim_button = ctk.CTkButton(mainframe, text='Trim video', command=trim_video)
-trim_button.grid(column=4, row=5, sticky='we')
+trim_button.grid(column=4, row=4, rowspan=2, sticky='ns')
 
 
 # labels
-ctk.CTkLabel(mainframe, text="Video File:").grid(column=1, row=1, sticky='W')
+ctk.CTkLabel(mainframe, text="Video File:").grid(
+    column=1, row=1, sticky='W', pady=(0, 4))
 ctk.CTkLabel(mainframe, text="Output Folder:").grid(
-    column=1, row=2, sticky='W')
-ctk.CTkLabel(mainframe, text="Start Time:").grid(column=1, row=3, sticky='W')
-ctk.CTkLabel(mainframe, text="End Time:").grid(column=1, row=4, sticky='W')
-ctk.CTkLabel(mainframe, text="New Filename:").grid(column=1, row=5, sticky='W')
+    column=1, row=2, sticky='W', pady=(0, 4))
+ctk.CTkLabel(mainframe, text="Start Time:").grid(
+    column=1, row=3, sticky='W', pady=(0, 4))
+ctk.CTkLabel(mainframe, text="End Time:").grid(
+    column=1, row=4, sticky='W', pady=(0, 4))
+ctk.CTkLabel(mainframe, text="New Filename:").grid(
+    column=1, row=5, sticky='W', padx=(0, 2), pady=(0, 4))
 
 
 gui.mainloop()
