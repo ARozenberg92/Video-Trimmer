@@ -109,7 +109,7 @@ def trim_video():
     else:
         ffmpeg_extract_subclip(video_path.get(), clip_start,
                                clip_end, targetname=output_file)
-    mb.showinfo("", 'Video trimming completed.')
+    mb.showinfo("", 'Video trimming completed.', icon="question")
 
 
 # GUI code
