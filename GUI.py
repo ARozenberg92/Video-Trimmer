@@ -1,12 +1,15 @@
-from tkinter import *
+import tkinter
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
+import customtkinter
 from moviepy.editor import VideoFileClip
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 import re
 import os
 
+ctk = customtkinter
+tk = tkinter
 # functions
 
 
@@ -60,9 +63,9 @@ def set_output_folder():
     if(check_out_folder.get() == 1):
         output_folder.set(get_source(video_path.get()))
         output_entry.xview("end")
-        output_entry.config(state='disabled')
+        output_entry.configure(state='disabled')
     else:
-        output_entry.config(state='enabled')
+        output_entry.configure(state='normal')
 
 
 def get_source(filepath):
@@ -108,83 +111,92 @@ def trim_video():
 
 
 # GUI code
-gui = Tk()
+customtkinter.set_appearance_mode("Dark")
+customtkinter.set_default_color_theme("blue")
+
+gui = customtkinter.CTk()
 gui.minsize(601, 132)
 gui.title("MP4 Video Trimmer")
-# scrollbar_x = ttk.Scrollbar(orient="horizontal")
+# scrollbar_x = ctk.Scrollbar(orient="horizontal")
 
-mainframe = ttk.Frame(gui, padding="3 3 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+mainframe = ctk.CTkFrame(master=gui,
+                         width=601,
+                         height=132,
+                         corner_radius=50)
+mainframe.grid(column=0, row=0, sticky=('N, W, E, S'))
 gui.columnconfigure(0, weight=1)
 gui.rowconfigure(0, weight=1)
 
 # display video path
-video_path = StringVar()
-video_path_entry = ttk.Entry(
-    mainframe, width=50, textvariable=video_path)
-video_path_entry.grid(column=2, row=1, sticky=(W, E), columnspan=2)
+video_path = tk.StringVar()
+video_path_entry = ctk.CTkEntry(
+    mainframe, width=500, textvariable=video_path)
+video_path_entry.grid(column=2, row=1, sticky=('we'), columnspan=2)
 
 
 # button to open file dialog to select file
-file_select = ttk.Button(mainframe, text='Choose file', command=select_file)
+file_select = ctk.CTkButton(mainframe, text='Choose file', command=select_file)
 file_select.grid(column=4, row=1, sticky='we')
 
 # output folder path
-output_folder = StringVar()
-output_entry = ttk.Entry(mainframe, width=50, textvariable=output_folder)
+output_folder = tk.StringVar()
+output_entry = ctk.CTkEntry(mainframe, width=50, textvariable=output_folder)
 output_entry.grid(column=2, row=2, sticky='we', columnspan=2)
 
 
 # button to open file dialog to select output location
-output_select = ttk.Button(
+output_select = ctk.CTkButton(
     mainframe, text='Choose folder', command=select_folder)
 output_select.grid(column=4, row=2, sticky='we')
 
 # start time
-start_time = StringVar()
-start_entry = ttk.Entry(mainframe, width=10, textvariable=start_time)
+start_time = tk.StringVar()
+start_time.set("00:00:00.00")
+start_entry = ctk.CTkEntry(mainframe, width=80, textvariable=start_time)
 start_entry.grid(column=2, row=3, sticky='w')
-# start_time = StringVar()
-# start_entry2 = ttk.Spinbox(
+# start_time = tk.StringVar()
+# start_entry2 = ctk.Spinbox(
 #     mainframe, from_=0, to=100, width=10, textvariable=start_time, increment=1,
 #     format='%2.2f')
 # start_entry.grid(column=2, row=3, sticky='w')
 
 # end time
-end_time = StringVar()
-end_entry = ttk.Entry(mainframe, width=10, textvariable=end_time)
+end_time = tk.StringVar()
+end_time.set("00:00:00.00")
+end_entry = ctk.CTkEntry(mainframe, width=80, textvariable=end_time)
 end_entry.grid(column=2, row=4, sticky='w')
 
 # check box for placing video in original folder
-check_out_folder = IntVar()
-check_folder = ttk.Checkbutton(mainframe, variable=check_out_folder,
+check_out_folder = tk.IntVar()
+check_folder = ctk.CTkCheckBox(mainframe, variable=check_out_folder,
                                command=set_output_folder,
                                text='Output file to input folder')
 check_folder.grid(column=3, row=3, sticky='w', columnspan=2)
 
 # check box for deleting original file after trim
-delete_file = BooleanVar()
-check_delete = ttk.Checkbutton(mainframe, variable=delete_file,
+delete_file = tk.BooleanVar()
+check_delete = ctk.CTkCheckBox(mainframe, variable=delete_file,
                                offvalue=False, onvalue=True,
                                text='Delete original file after trimming')
 check_delete.grid(column=3, row=4, sticky='w', columnspan=2)
 
 # Entry for new filename
-filename = StringVar()
-new_filename = ttk.Entry(mainframe, width=50, textvariable=filename)
+filename = tk.StringVar()
+new_filename = ctk.CTkEntry(mainframe, width=50, textvariable=filename)
 new_filename.grid(column=2, row=5)
 
 # trim video button
-trim_button = ttk.Button(mainframe, text='Trim video', command=trim_video)
+trim_button = ctk.CTkButton(mainframe, text='Trim video', command=trim_video)
 trim_button.grid(column=4, row=5, sticky='we')
 
 
 # labels
-ttk.Label(mainframe, text="Video File:").grid(column=1, row=1, sticky=W)
-ttk.Label(mainframe, text="Output Folder:").grid(column=1, row=2, sticky=W)
-ttk.Label(mainframe, text="Start Time:").grid(column=1, row=3, sticky=W)
-ttk.Label(mainframe, text="End Time:").grid(column=1, row=4, sticky=W)
-ttk.Label(mainframe, text="New Filename:").grid(column=1, row=5, sticky=W)
+ctk.CTkLabel(mainframe, text="Video File:").grid(column=1, row=1, sticky='W')
+ctk.CTkLabel(mainframe, text="Output Folder:").grid(
+    column=1, row=2, sticky='W')
+ctk.CTkLabel(mainframe, text="Start Time:").grid(column=1, row=3, sticky='W')
+ctk.CTkLabel(mainframe, text="End Time:").grid(column=1, row=4, sticky='W')
+ctk.CTkLabel(mainframe, text="New Filename:").grid(column=1, row=5, sticky='W')
 
 
 gui.mainloop()
