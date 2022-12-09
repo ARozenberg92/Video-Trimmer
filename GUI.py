@@ -5,14 +5,127 @@ from tkinter import messagebox as mb
 import customtkinter
 from moviepy.editor import VideoFileClip
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+from typing import Union
 import re
 import os
 
 ctk = customtkinter
 tk = tkinter
+
+# class for custom time spinbox
+
+
+class TimeSpinbox(customtkinter.CTkFrame):
+    def __init__(self, *args,
+                 width: int = 145,
+                 height: int = 32,
+                 step_size: Union[int, float] = 1,
+                 command: callable = None,
+                 **kwargs):
+        super().__init__(*args, width=width, height=height, **kwargs)
+
+        self.step_size = step_size
+        self.command = command
+
+        self.configure(fg_color=("gray78", "gray28"))  # set frame color
+
+        self.grid_columnconfigure((0, 2), weight=0)  # buttons don't expand
+        self.grid_columnconfigure(1, weight=1)  # entry expands
+
+        self.subtract_button = customtkinter.CTkButton(self, text="▼", width=height - 6, height=height / 3,
+                                                       command=self.subtract_button_callback)
+        self.subtract_button.grid(
+            row=0, column=2, padx=(0, 3), pady=(height / 1.5, 0))
+
+        self.entry = customtkinter.CTkEntry(
+            self, width=width - (2 * height), height=height - 6, border_width=0, validate='focusout', validatecommand=self.validate_timestamp)
+        self.entry.bind('<Return>', self.remove_focus)
+        self.entry.grid(row=0, column=1, columnspan=1,
+                        padx=3, pady=3, sticky="ew")
+
+        self.add_button = customtkinter.CTkButton(self, text="▲", width=height - 6, height=height / 4,
+                                                  command=self.add_button_callback)
+        self.add_button.grid(row=0, column=2, padx=(0, 3),
+                             pady=(0, height / 1.5))
+
+        # default value
+        self.entry.insert(0, "00:00:00.00")
+
+    def remove_focus(self, key):
+        self.add_button.focus_set()
+
+    def validate_timestamp(self):
+        time_input = [m.start() for m in re.finditer(':', self.entry.get())]
+        string_check = self.entry.get()
+        timestamp = self.entry.get()
+        string_check = string_check.replace('.', '')
+        string_check = string_check.replace(':', '')
+        if string_check.isnumeric():
+            total_seconds = self.time_to_seconds(timestamp)
+            timestamp = self.convert_to_timestamp(total_seconds)
+        else:
+            timestamp = 'Input Error'
+        self.entry.delete(0, "end")
+        self.entry.insert(0, timestamp)
+        return True
+
+    def convert_to_timestamp(self, value: float):
+        hours = int(value // 3600)
+        minutes = int((value - hours * 3600) // 60)
+        seconds = value - (hours * 3600 + minutes * 60)
+        timestamp = str(hours).zfill(2) + ':' + \
+            str(minutes).zfill(2) + ':' + \
+            str(format(seconds, '.2f')).zfill(5)
+        return(timestamp)
+
+    def add_button_callback(self):
+        if self.command is not None:
+            self.command()
+        try:
+            value = self.time_to_seconds(self.entry.get()) + self.step_size
+            self.entry.delete(0, "end")
+            self.entry.insert(0, self.convert_to_timestamp(value))
+        except ValueError:
+            return
+
+    def subtract_button_callback(self):
+        if self.command is not None:
+            self.command()
+        try:
+            value = self.time_to_seconds(self.entry.get()) - self.step_size
+            self.entry.delete(0, "end")
+            self.entry.insert(0, self.convert_to_timestamp(value))
+        except ValueError:
+            return
+
+    def get(self):
+        try:
+            return self.entry.get()
+        except ValueError:
+            return None
+
+    def set(self, value: str):
+        self.entry.delete(0, "end")
+        self.entry.insert(0, value)
+
+    def time_to_seconds(self, timestamp: str):
+        time_input = [m.start() for m in re.finditer(':', timestamp)]
+        if len(time_input) == 0:
+            return float(timestamp)
+        elif len(time_input) == 1:
+            minutes = float(timestamp[:time_input[0]])
+            seconds = float(timestamp[time_input[0] + 1:])
+            return minutes * 60 + seconds
+        elif len(time_input) == 2:
+            hours = float(timestamp[:time_input[0]])
+            minutes = float(timestamp[time_input[0] + 1:time_input[1]])
+            seconds = float(timestamp[time_input[1] + 1:])
+            return hours * 3600 + minutes * 60 + seconds
+        else:
+            return 0
+
+
 # functions
-
-
 def select_file():
     filetypes = (
         ('MP4 files', '*.mp4'),
@@ -123,8 +236,7 @@ gui.title("MP4 Video Trimmer")
 
 mainframe = ctk.CTkFrame(master=gui,
                          width=601,
-                         height=132,
-                         corner_radius=50)
+                         height=132)
 mainframe.grid(column=0, row=0, sticky=('N, W, E, S'))
 gui.columnconfigure((0, 1), weight=1)
 gui.columnconfigure((2, 3, 4), weight=0)
@@ -155,21 +267,12 @@ output_select = ctk.CTkButton(
 output_select.grid(column=4, row=2, pady=(0, 4))
 
 # start time
-start_time = tk.StringVar()
-start_time.set("00:00:00.00")
-start_entry = ctk.CTkEntry(mainframe, width=85, textvariable=start_time)
-start_entry.grid(column=2, row=3, sticky='w', pady=(0, 4))
-# start_time = tk.StringVar()
-# start_entry2 = ctk.Spinbox(
-#     mainframe, from_=0, to=100, width=10, textvariable=start_time, increment=1,
-#     format='%2.2f')
-# start_entry.grid(column=2, row=3, sticky='w')
+start_time = TimeSpinbox(mainframe)
+start_time.grid(column=2, row=3, sticky='w', pady=(0, 4))
 
 # end time
-end_time = tk.StringVar()
-end_time.set("00:00:00.00")
-end_entry = ctk.CTkEntry(mainframe, width=85, textvariable=end_time)
-end_entry.grid(column=2, row=4, sticky='w', pady=(0, 4))
+end_time = TimeSpinbox(mainframe)
+end_time.grid(column=2, row=4, sticky='w', pady=(0, 4))
 
 # check box for placing video in original folder
 check_out_folder = tk.IntVar()
@@ -177,7 +280,7 @@ check_folder = ctk.CTkCheckBox(mainframe, variable=check_out_folder,
                                command=set_output_folder,
                                text='Output file to input folder')
 check_folder.grid(column=2, row=3, sticky='w',
-                  columnspan=2, padx=(90, 0), pady=(0, 4))
+                  columnspan=2, padx=(120, 0), pady=(0, 4))
 
 # check box for deleting original file after trim
 delete_file = tk.BooleanVar()
@@ -185,29 +288,29 @@ check_delete = ctk.CTkCheckBox(mainframe, variable=delete_file,
                                offvalue=False, onvalue=True,
                                text='Delete original file after trimming')
 check_delete.grid(column=2, row=4, sticky='w',
-                  columnspan=2, padx=(90, 0), pady=(0, 4))
+                  columnspan=2, padx=(120, 0), pady=(0, 4))
 
 # Entry for new filename
 filename = tk.StringVar()
 new_filename = ctk.CTkEntry(mainframe, width=100, textvariable=filename)
-new_filename.grid(column=2, row=5, sticky='we')
+new_filename.grid(column=2, row=5, sticky='we', pady=(0, 2))
 
 # trim video button
 trim_button = ctk.CTkButton(mainframe, text='Trim video', command=trim_video)
-trim_button.grid(column=4, row=4, rowspan=2, sticky='ns')
+trim_button.grid(column=4, row=4, rowspan=2, sticky='ns', pady=(0, 2))
 
 
 # labels
 ctk.CTkLabel(mainframe, text="Video File:").grid(
-    column=1, row=1, sticky='W', pady=(0, 4))
+    column=1, row=1, sticky='W', padx=(5, 0), pady=(0, 4))
 ctk.CTkLabel(mainframe, text="Output Folder:").grid(
-    column=1, row=2, sticky='W', pady=(0, 4))
+    column=1, row=2, sticky='W', padx=(5, 0), pady=(0, 4))
 ctk.CTkLabel(mainframe, text="Start Time:").grid(
-    column=1, row=3, sticky='W', pady=(0, 4))
+    column=1, row=3, sticky='W', padx=(5, 0), pady=(0, 4))
 ctk.CTkLabel(mainframe, text="End Time:").grid(
-    column=1, row=4, sticky='W', pady=(0, 4))
+    column=1, row=4, sticky='W', padx=(5, 0), pady=(0, 4))
 ctk.CTkLabel(mainframe, text="New Filename:").grid(
-    column=1, row=5, sticky='W', padx=(0, 2), pady=(0, 4))
+    column=1, row=5, sticky='W', padx=(5, 2), pady=(0, 4))
 
 
 gui.mainloop()
