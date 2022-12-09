@@ -244,16 +244,16 @@ gui.rowconfigure((0, 1, 2, 3, 4), weight=1)
 
 # display video path
 video_path = tk.StringVar()
-video_path.set('C:/Users/adamm/Downloads/sample-mp4-file.mp4')  # debug only
+# video_path.set('C:/Users/adamm/Downloads/sample-mp4-file.mp4')  # debug only
 video_path_entry = ctk.CTkEntry(
     mainframe, width=500, textvariable=video_path)
 video_path_entry.grid(column=2, row=1, sticky='we',
-                      columnspan=2, pady=(0, 4))
+                      columnspan=2, pady=(4, 4))
 
 
 # button to open file dialog to select file
 file_select = ctk.CTkButton(mainframe, text='Choose file', command=select_file)
-file_select.grid(column=4, row=1, padx=4, pady=(0, 4))
+file_select.grid(column=4, row=1, padx=4, pady=(4, 4))
 
 # output folder path
 output_folder = tk.StringVar()
@@ -302,7 +302,7 @@ trim_button.grid(column=4, row=4, rowspan=2, sticky='ns', pady=(0, 2))
 
 # labels
 ctk.CTkLabel(mainframe, text="Video File:").grid(
-    column=1, row=1, sticky='W', padx=(5, 0), pady=(0, 4))
+    column=1, row=1, sticky='W', padx=(5, 0), pady=(4, 4))
 ctk.CTkLabel(mainframe, text="Output Folder:").grid(
     column=1, row=2, sticky='W', padx=(5, 0), pady=(0, 4))
 ctk.CTkLabel(mainframe, text="Start Time:").grid(
