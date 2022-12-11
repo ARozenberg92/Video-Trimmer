@@ -1,17 +1,8 @@
 import tkinter
-from tkinter import ttk
-from tkinter import filedialog as fd
-from tkinter import messagebox as mb
 import customtkinter
-from moviepy.editor import VideoFileClip
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
-from typing import Union
-import re
-import os
-import configparser
 from custom_widgets import TimeSpinbox
 from functions import *
-
+from tkinter import *
 ctk = customtkinter
 tk = tkinter
 
@@ -21,14 +12,11 @@ tk = tkinter
 class GUI:
     def __init__(self, root=None):
         # scrollbar_x = ctk.Scrollbar(orient="horizontal")
-
         self.mainframe = ctk.CTkFrame(master=root,
-                                      width=601,
-                                      height=132)
+                                      width=744,
+                                      height=194)
         self.mainframe.grid(column=0, row=0, sticky=('N, W, E, S'))
-        # self.columnconfigure((0, 1), weight=1)
-        # self.columnconfigure((2, 3, 4), weight=0)
-        # self.rowconfigure((0, 1, 2, 3, 4), weight=1)
+
         # display video path
         self.video_path = tk.StringVar()
         # video_path.set('C:/Users/adamm/Downloads/sample-mp4-file.mp4')  # debug only
@@ -67,7 +55,7 @@ class GUI:
         self.check_folder = ctk.CTkCheckBox(self.mainframe, variable=self.check_out_folder,
                                             offvalue=False, onvalue=True,
                                             command=lambda: set_output_folder(
-                                                gui),
+                                                self),
                                             text='Output file to input folder')
         self.check_folder.grid(column=2, row=3, sticky='w',
                                columnspan=2, padx=(120, 0), pady=(0, 4))
@@ -109,9 +97,14 @@ customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("blue")
 
 root = customtkinter.CTk()
-root.minsize(601, 132)
-root.title("MP4 Video Trimmer")
+
 GUI(root)
+root.minsize(744, 194)
+root.maxsize(744, 194)
+root.title("MP4 Video Trimmer")
+root.columnconfigure((0, 1), weight=1)
+root.columnconfigure((2, 3, 4), weight=0)
+root.rowconfigure((0, 1, 2, 3, 4), weight=1)
 
 startup_sequence()
 root.mainloop()
