@@ -8,9 +8,11 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from typing import Union
 import re
 import os
+import configparser
 
 ctk = customtkinter
 tk = tkinter
+
 
 # class for custom time spinbox
 
@@ -127,6 +129,7 @@ class TimeSpinbox(customtkinter.CTkFrame):
 
 # functions
 def select_file():
+    global input_file_dir
     filetypes = (
         ('MP4 files', '*.mp4'),
         ('MKV files', '*.mkv'),
@@ -135,7 +138,7 @@ def select_file():
         ('All files', '*.*')
     )
     filename = fd.askopenfilename(
-        title='Open a file', initialdir='/', filetypes=filetypes)
+        title='Open a file', initialdir=input_file_dir, filetypes=filetypes)
     if not filename:
         return
     else:
@@ -148,11 +151,15 @@ def select_file():
             set_output_folder()
         start_time.set('00:00:00.00')
         end_time.set(sec_to_timestamp(clip_time))
+        input_file_dir = get_source(filename)
 
 
 def select_folder():
-    selected_folder = fd.askdirectory()
+    global output_file_dir
+    selected_folder = fd.askdirectory(
+        title='Select a Folder', initialdir=output_file_dir)
     output_folder.set(selected_folder)
+    output_file_dir = selected_folder
 
 
 def time_to_sec(timestamp):
@@ -172,12 +179,14 @@ def sec_to_timestamp(total_seconds):
 
 
 def set_output_folder():
-    # print(check_out_folder.get())
-    if(check_out_folder.get() == 1):
-        output_folder.set(get_source(video_path.get()))
+    global output_file_dir
+    if check_out_folder.get():
+        out_dir = get_source(video_path.get())
+        output_folder.set(out_dir)
         output_entry.xview("end")
         output_entry.configure(text_color='light grey',
                                fg_color='grey', state='disabled')
+        output_file_dir = out_dir
     else:
         output_entry.configure(
             text_color="#DCE4EE", fg_color="#343638", state='normal')
@@ -223,6 +232,41 @@ def trim_video():
         ffmpeg_extract_subclip(video_path.get(), clip_start,
                                clip_end, targetname=output_file)
     mb.showinfo("", 'Video trimming completed.', icon="question")
+
+
+def startup_sequence():
+    global input_file_dir
+    global output_file_dir
+    cfg = configparser.ConfigParser()
+    path = 'settings/default.ini'
+
+    current_directory = os.getcwd()
+    final_directory = os.path.join(current_directory, r'settings')
+    if not os.path.exists(final_directory):
+        os.makedirs(final_directory)
+
+    if not os.path.isfile(path):
+        cfg['inout_settings'] = {'input_file_dir': current_directory,
+                                 'output_file_dir': current_directory}
+        with open(path, 'w') as configfile:
+            cfg.write(configfile)
+
+    cfg.read(path)
+    inout_settings = cfg['inout_settings']
+    input_file_dir = inout_settings['input_file_dir']
+    output_file_dir = inout_settings['output_file_dir']
+
+
+def end_sequence():
+    global input_file_dir
+    global output_file_dir
+    cfg = configparser.ConfigParser()
+    path = 'settings/default.ini'
+
+    cfg['inout_settings'] = {'input_file_dir': input_file_dir,
+                             'output_file_dir': output_file_dir}
+    with open(path, 'w') as configfile:
+        cfg.write(configfile)
 
 
 # GUI code
@@ -275,8 +319,9 @@ end_time = TimeSpinbox(mainframe)
 end_time.grid(column=2, row=4, sticky='w', pady=(0, 4))
 
 # check box for placing video in original folder
-check_out_folder = tk.IntVar()
+check_out_folder = tk.BooleanVar()
 check_folder = ctk.CTkCheckBox(mainframe, variable=check_out_folder,
+                               offvalue=False, onvalue=True,
                                command=set_output_folder,
                                text='Output file to input folder')
 check_folder.grid(column=2, row=3, sticky='w',
@@ -312,5 +357,6 @@ ctk.CTkLabel(mainframe, text="End Time:").grid(
 ctk.CTkLabel(mainframe, text="New Filename:").grid(
     column=1, row=5, sticky='W', padx=(5, 2), pady=(0, 4))
 
-
+startup_sequence()
 gui.mainloop()
+end_sequence()
