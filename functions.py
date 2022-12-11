@@ -1,4 +1,17 @@
-def select_file():
+import tkinter
+from tkinter import ttk
+from tkinter import filedialog as fd
+from tkinter import messagebox as mb
+import customtkinter
+from moviepy.editor import VideoFileClip
+from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
+from typing import Union
+import re
+import os
+import configparser
+
+
+def select_file(root):
     global input_file_dir
     filetypes = (
         ('MP4 files', '*.mp4'),
@@ -15,16 +28,16 @@ def select_file():
         clip = VideoFileClip(filename)
         clip_time = clip.duration
         clip.close()
-        video_path.set(filename)
-        video_path_entry.xview("end")
+        root.video_path.set(filename)
+        root.video_path_entry.xview("end")
         if check_out_folder.get() == 1:
             set_output_folder()
-        start_time.set('00:00:00.00')
-        end_time.set(sec_to_timestamp(clip_time))
+        root.start_time.set('00:00:00.00')
+        root.end_time.set(sec_to_timestamp(clip_time))
         input_file_dir = get_source(filename)
 
 
-def select_folder():
+def select_folder(root, output_folder):
     global output_file_dir
     selected_folder = fd.askdirectory(
         title='Select a Folder', initialdir=output_file_dir)
@@ -48,7 +61,7 @@ def sec_to_timestamp(total_seconds):
            + str(seconds).zfill(4))
 
 
-def set_output_folder():
+def set_output_folder(root):
     global output_file_dir
     if check_out_folder.get():
         out_dir = get_source(video_path.get())
@@ -69,7 +82,7 @@ def get_source(filepath):
         return(filepath[:filepath.rfind('/')])
 
 
-def trim_video():
+def trim_video(root):
     file_extension = video_path.get()[video_path.get().rfind('.'):]
     if not filename.get():
         index = video_path.get().rfind('/') + 1
