@@ -1,3 +1,8 @@
+import customtkinter
+from typing import Union
+import re
+
+
 class TimeSpinbox(customtkinter.CTkFrame):
     # custom spinbox for handling time inputs
     def __init__(self, *args,
@@ -107,4 +112,3 @@ class TimeSpinbox(customtkinter.CTkFrame):
             return hours * 3600 + minutes * 60 + seconds
         else:
             return 0
-
